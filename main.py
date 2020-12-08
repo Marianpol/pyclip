@@ -251,7 +251,7 @@ class screenConfig(App):
         mod_globals.opt_cfc0 = self.button['Use CFC0'].active
         mod_globals.opt_n1c = False
         mod_globals.opt_exp = False
-        mod_globals.opt_dump = False
+        mod_globals.opt_dump = self.button['DUMP'].active
         mod_globals.opt_can2 = self.button['CAN2 (Multimedia CAN)'].active
         if 'wifi' in self.mainbutton.text.lower():
             mod_globals.opt_port = '192.168.0.10:35000'
@@ -291,7 +291,7 @@ class screenConfig(App):
         layout.add_widget(self.make_input('Font size', str(mod_globals.fontSize)))
         layout.add_widget(self.make_box_switch('KWP Force SlowInit', mod_globals.opt_si))
         layout.add_widget(self.make_box_switch('Use CFC0', mod_globals.opt_cfc0))
-        layout.add_widget(Label(text='PyClip by Marianpol 07-11-2020', font_size=fs, height=fs, size_hint=(1, None)))
+        layout.add_widget(Label(text='PyClip by Marianpol 05-12-2020', font_size=fs, height=fs, size_hint=(1, None)))
         self.lay = layout
         root = ScrollView(size_hint=(1, 1), do_scroll_x=False, pos_hint={'center_x': 0.5,
          'center_y': 0.5})
@@ -336,7 +336,26 @@ def main():
     kivyScreenConfig()
     settings.save()
     print 'Opening ELM'
-    elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+    try:
+        elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+    except:
+        labelText = '''
+            Could not connect to the ELM.
+
+            Possible causes:
+            - Bluetooth is not enabled
+            - other applications are connected to your ELM e.g Torque
+            - other device is using this ELM
+            - ELM got unpaired
+            - ELM is read under new name or it changed its name
+
+            Check your ELM connection and try again.
+        '''
+        lbltxt = Label(text=labelText, font_size=mod_globals.fontSize)
+        popup_load = Popup(title='ELM connection error', content=lbltxt, size=(800, 800), auto_dismiss=True, on_dismiss=exit)
+        popup_load.open()
+        base.runTouchApp()
+        exit(2)
     if mod_globals.opt_speed < mod_globals.opt_rate and not mod_globals.opt_demo:
         elm.port.soft_boudrate(mod_globals.opt_rate)
     print 'Loading ECUs list'
@@ -375,14 +394,14 @@ def main():
     popup_load.dismiss()
     base.stopTouchApp()
     base.EventLoop.window.canvas.clear()
-    if not os.path.isfile(mod_globals.cache_dir + 'version09r_fix#3.txt'):
+    if not os.path.isfile(mod_globals.cache_dir + 'version09r_fix#4.txt'):
         for root, dirs, files in os.walk(mod_globals.cache_dir):
             for sfile in files:
                 if sfile.startswith('ver') or sfile.startswith('FG'):
                     full_path = os.path.join(mod_globals.cache_dir, sfile)
                     os.remove(full_path)
 
-        verfile = open(mod_globals.cache_dir + 'version09r_fix#3.txt', 'wb')
+        verfile = open(mod_globals.cache_dir + 'version09r_fix#4.txt', 'wb')
         verfile.write('Do not remove me if you have v.0.9.e or above.\n')
         verfile.close()
     while 1:
