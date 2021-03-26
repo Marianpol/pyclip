@@ -45,7 +45,7 @@ log_dir = './logs/'
 dumps_dir = './dumps/'
 csv_dir = './csv/'
 fontSize = 20
-screen_orient = True
+screen_orient = False
 
 class Settings:
     port = ''

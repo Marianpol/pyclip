@@ -314,7 +314,9 @@ def get_devices():
         return devs
     paired_devices = BluetoothAdapter.getDefaultAdapter().getBondedDevices().toArray()
     for device in paired_devices:
-        devs.append(device.getName())
+        deviceName = device.getName()
+        if deviceName:
+            devs.append(deviceName)
 
     return devs
 

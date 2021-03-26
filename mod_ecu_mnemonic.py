@@ -88,7 +88,8 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
 def get_mnemonic(m, se, elm):
     if not m.serviceID and mod_globals.ext_cur_DTC != '000000':
         for sid in se.keys():
-            if se[sid].startReq == '120004' + mod_globals.ext_cur_DTC[:4]:
+            startReq = se[sid].startReq
+            if startReq.startswith("12") and startReq.endswith(mod_globals.ext_cur_DTC[:4]):
                 m.startByte = se[sid].responces[se[sid].responces.keys()[0]].mnemolocations[m.name].startByte
                 m.startBit = se[sid].responces[se[sid].responces.keys()[0]].mnemolocations[m.name].startBit
                 m.request = se[sid].startReq
