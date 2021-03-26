@@ -288,34 +288,35 @@ negrsp = {'10': 'NR: General Reject',
  '93': 'NR: Voltage Too Low'}
 
 def get_bt_socket_stream():
-    paired_devices = BluetoothAdapter.getDefaultAdapter().getBondedDevices().toArray()
-    for device in paired_devices:
-        if mod_globals.bt_dev and mod_globals.bt_dev != device.getName():
-            continue
-        socket = device.createRfcommSocketToServiceRecord(UUID.fromString('00001101-0000-1000-8000-00805F9B34FB'))
-        #print 'python PYREN : trying to connect %s' % device.getName()
-        try:
-            socket.connect()
-            recv_stream = socket.getInputStream()
-            send_stream = socket.getOutputStream()
-            return (recv_stream, send_stream)
-        except:
-            ##print 'python PYREN : cannot connect %s' % device.getName()
-            pass
+    adapter = BluetoothAdapter.getDefaultAdapter()
+    adapter.cancelDiscovery()
+
+    device = adapter.getRemoteDevice(bytearray.fromhex(''.join(mod_globals.opt_dev_address.split(':'))))
+
+    socket = device.createRfcommSocketToServiceRecord(UUID.fromString('00001101-0000-1000-8000-00805F9B34FB'))
+    socket.connect()
+    recv_stream = socket.getInputStream()
+    send_stream = socket.getOutputStream()
+    
+    return (socket, recv_stream, send_stream)
 
 
 def get_devices():
-    devs = []
+    devs = {}
     if mod_globals.os != 'android':
         iterator = sorted(list(list_ports.comports()))
         for port, desc, hwid in iterator:
-            devs.append(port)
+            devs[desc] = port
 
         return devs
+    
     paired_devices = BluetoothAdapter.getDefaultAdapter().getBondedDevices().toArray()
     for device in paired_devices:
-        devs.append(device.getName())
-
+        deviceName = device.getName()
+        if deviceName:
+            deviceAddress = device.getAddress()
+            devs[deviceName] = deviceAddress
+    
     return devs
 
 
@@ -343,7 +344,7 @@ class Port:
             self.hdr.setblocking(True)
         elif mod_globals.os == 'android':
             self.portType = 2
-            self.recv_stream, self.send_stream = get_bt_socket_stream()
+            self.getConnected()
         else:
             self.portName = portName
             self.portType = 0
@@ -374,6 +375,14 @@ class Port:
         
         self.write("AT\r")
         self.expect(">",1)
+
+    def closeConnection(self):
+        self.recv_stream.close()
+        self.send_stream.close()
+        self.socket.close()
+
+    def getConnected(self):
+        self.socket, self.recv_stream, self.send_stream = get_bt_socket_stream()
 
     def read(self):
         try:
