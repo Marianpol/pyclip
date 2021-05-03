@@ -291,7 +291,7 @@ class screenConfig(App):
         layout.add_widget(self.make_input('Font size', str(mod_globals.fontSize)))
         layout.add_widget(self.make_box_switch('KWP Force SlowInit', mod_globals.opt_si))
         layout.add_widget(self.make_box_switch('Use CFC0', mod_globals.opt_cfc0))
-        layout.add_widget(Label(text='PyClip by Marianpol 26-03-2021', font_size=fs, height=fs, size_hint=(1, None)))
+        layout.add_widget(Label(text='PyClip by Marianpol 03-05-2021', font_size=fs, height=fs, size_hint=(1, None)))
         self.lay = layout
         root = ScrollView(size_hint=(1, 1), do_scroll_x=False, pos_hint={'center_x': 0.5,
          'center_y': 0.5})
@@ -312,7 +312,6 @@ def kivyScreenConfig():
             set_orientation_portrait()
         else:
             set_orientation_landscape()
-        mod_globals.opt_perform = True
     
     Window.bind(on_close=destroy)
     while 1:
@@ -394,14 +393,14 @@ def main():
     popup_load.dismiss()
     base.stopTouchApp()
     base.EventLoop.window.canvas.clear()
-    if not os.path.isfile(mod_globals.cache_dir + 'version09r_fix#5.txt'):
+    if not os.path.isfile(mod_globals.cache_dir + 'version09r_fix#6.txt'):
         for root, dirs, files in os.walk(mod_globals.cache_dir):
             for sfile in files:
                 if sfile.startswith('ver') or sfile.startswith('FG'):
                     full_path = os.path.join(mod_globals.cache_dir, sfile)
                     os.remove(full_path)
 
-        verfile = open(mod_globals.cache_dir + 'version09r_fix#5.txt', 'wb')
+        verfile = open(mod_globals.cache_dir + 'version09r_fix#6.txt', 'wb')
         verfile.write('Do not remove me if you have v.0.9.e or above.\n')
         verfile.close()
     while 1:
