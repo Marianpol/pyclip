@@ -174,8 +174,10 @@ class screenConfig(App):
         btn = Button(text='WiFi (192.168.0.10:35000)', size_hint_y=None, height=fs * 2)
         btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
         self.bt_dropdown.add_widget(btn)
-        for dev in ports:
-            btn = Button(text=dev, size_hint_y=None, height=fs * 2)
+        for name, address in ports.iteritems():
+            if mod_globals.opt_port == name:
+                mod_globals.opt_dev_address = address
+            btn = Button(text=name + '>' + address, size_hint_y=None, height=fs * 2)
             btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
             self.bt_dropdown.add_widget(btn)
 
@@ -256,7 +258,10 @@ class screenConfig(App):
         if 'wifi' in self.mainbutton.text.lower():
             mod_globals.opt_port = '192.168.0.10:35000'
         else:
-            mod_globals.opt_port = self.mainbutton.text
+            bt_device = self.mainbutton.text.split('>')
+            mod_globals.opt_port = bt_device[0]
+            if len(bt_device) > 1:
+                mod_globals.opt_dev_address = bt_device[-1]
             mod_globals.bt_dev = self.mainbutton.text
         self.stop()
 
@@ -291,7 +296,7 @@ class screenConfig(App):
         layout.add_widget(self.make_input('Font size', str(mod_globals.fontSize)))
         layout.add_widget(self.make_box_switch('KWP Force SlowInit', mod_globals.opt_si))
         layout.add_widget(self.make_box_switch('Use CFC0', mod_globals.opt_cfc0))
-        layout.add_widget(Label(text='PyClip by Marianpol 03-05-2021', font_size=fs, height=fs, size_hint=(1, None)))
+        layout.add_widget(Label(text='PyClip by Marianpol 08-06-2021', font_size=fs, height=fs, size_hint=(1, None)))
         self.lay = layout
         root = ScrollView(size_hint=(1, 1), do_scroll_x=False, pos_hint={'center_x': 0.5,
          'center_y': 0.5})

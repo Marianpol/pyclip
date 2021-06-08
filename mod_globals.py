@@ -9,6 +9,7 @@ opt_ecuAddr = ''
 opt_protocol = ''
 opt_speed = 38400
 opt_rate = 38400
+opt_dev_address = ''
 opt_lang = ''
 opt_car = ''
 opt_log = ''
@@ -59,6 +60,7 @@ class Settings:
     screen_orient = False
     useDump = False
     csv = False
+    dev_address = ''
 
     def __init__(self):
         global opt_lang
@@ -71,6 +73,7 @@ class Settings:
         global screen_orient
         global opt_demo
         global opt_csv
+        global opt_dev_address
         self.load()
         opt_port = self.port
         opt_lang = self.lang
@@ -82,6 +85,7 @@ class Settings:
         screen_orient = self.screen_orient
         opt_dump = self.useDump
         opt_csv = self.csv
+        opt_dev_address = self.dev_address
 
     def __del__(self):
         self.save()
@@ -112,6 +116,7 @@ class Settings:
         self.screen_orient = screen_orient
         self.useDump = opt_dump
         self.csv = opt_csv
+        self.dev_address = opt_dev_address
         f = open(user_data_dir + '/settings.p', 'wb')
         pickle.dump(self.__dict__, f)
         f.close()
