@@ -461,7 +461,7 @@ class ECU():
             self.elm.init_iso()
             self.elm.set_iso_addr(self.ecudata['dst'], self.ecudata)
         self.elm.start_session(self.ecudata['startDiagReq'])
-        if self.ecudata['pin'].lower()=='can' and self.DataIds:
+        if self.ecudata['pin'].lower()=='can' and self.DataIds and mod_globals.opt_csv:
             mod_globals.opt_perform = True
             self.elm.checkModulePerformaceLevel(self.DataIds)
         
