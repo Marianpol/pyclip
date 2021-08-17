@@ -42,12 +42,17 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
     resp = resp[8*byteLength:]
 
     didDict = {}
+    numberOfPossibleDataId = 0
     posInResp = 0
     dataIdLength = dataIdByteLength * byteLength
 
-    for currentDataId in range(numberOfIdentifiers):
+    for idNum in range(numberOfIdentifiers):
+        if (idNum + numberOfPossibleDataId > numberOfIdentifiers):
+            break
+        
         dataId = resp[posInResp:posInResp + dataIdLength].replace(" ", "")
         posInResp += dataIdLength
+
         if dataId not in dataids.keys():
             bytePos = 1
             restOfResp = resp[posInResp:]
@@ -55,10 +60,13 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
             while True:
                 posInRestResp = bytePos*byteLength
                 if len(restOfResp) > posInRestResp + dataIdLength and restOfResp[posInRestResp] == '2':
+                    numberOfPossibleDataId = numberOfPossibleDataId + 1
                     possibleDataId = restOfResp[posInRestResp:posInRestResp + dataIdLength].replace(" ", "")
                     if possibleDataId in dataids.keys():
                         posInResp += posInRestResp
                         break
+                    else:
+                        bytePos += 1
                 else:
                     bytePos += 1
             continue
@@ -68,8 +76,8 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
         posInResp += didDataLength*3
         didDict[dataId] = didData
     
-    startByte = ''
-    startBit = ''
+    startByte = '1'
+    startBit = '0'
     dataId = ''
     for did in dataids.keys():
         for mn in dataids[did].mnemolocations.keys():

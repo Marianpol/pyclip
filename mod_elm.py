@@ -297,9 +297,8 @@ def get_bt_socket_stream():
     socket.connect()
     recv_stream = socket.getInputStream()
     send_stream = socket.getOutputStream()
-    
-    return (socket, recv_stream, send_stream)
 
+    return (socket, recv_stream, send_stream)
 
 def get_devices():
     devs = {}
@@ -316,7 +315,6 @@ def get_devices():
         if deviceName:
             deviceAddress = device.getAddress()
             devs[deviceName] = deviceAddress
-    
     return devs
 
 
@@ -600,6 +598,7 @@ class ELM:
     currentScreenDataIds = []
     rsp_cache = OrderedDict()
     l1_cache = {}
+    tmpNotSupportedCommands = {}
     notSupportedCommands = {}
     ecudump = {}
     ATR1 = True
@@ -650,6 +649,22 @@ class ELM:
 
     def setDump(self, ecudump):
         self.ecudump = ecudump
+    
+    def checkIfCommandUnsupported(self, req, res):
+        if "NR" in res:
+            nr = res.split (':')[1]
+            if nr in ['12']:
+                if mod_globals.opt_csv_only:
+                    self.notSupportedCommands[req] = res
+                else:
+                    if req in self.tmpNotSupportedCommands.keys():
+                        del self.tmpNotSupportedCommands[req]
+                        self.notSupportedCommands[req] = res
+                    else:
+                        self.tmpNotSupportedCommands[req] = res
+        else:
+            if req in self.tmpNotSupportedCommands.keys():
+                del self.tmpNotSupportedCommands[req]
 
     def request(self, req, positive = '', cache = True, serviceDelay = '0'):
         if mod_globals.opt_demo and req in self.ecudump.keys():
@@ -717,6 +732,7 @@ class ELM:
             no_negative_wait_response = True
             self.lastCMDtime = tc = time.time()
             cmdrsp = self.send_cmd(command)
+            self.checkIfCommandUnsupported(command, cmdrsp)
             for line in cmdrsp.split('\n'):
                 line = line.strip().upper()
                 nr = ''
@@ -724,8 +740,6 @@ class ELM:
                     nr = line[6:8]
                 if line.startswith('NR'):
                     nr = line.split(':')[1]
-                if nr in ('12',):
-                    self.notSupportedCommands[command] = cmdrsp
                 if nr in ('21', '23'):
                     time.sleep(0.5)
                     no_negative_wait_response = False
@@ -1303,6 +1317,7 @@ class ELM:
 
     def set_can_addr(self, addr, ecu):
         self.notSupportedCommands = {}
+        self.tmpNotSupportedCommands = {}
         if self.currentprotocol == 'can' and self.currentaddress == addr:
             return
         if len(ecu['idTx']):
@@ -1377,6 +1392,7 @@ class ELM:
 
     def set_iso_addr(self, addr, ecu):
         self.notSupportedCommands = {}
+        self.tmpNotSupportedCommands = {}
         if self.currentprotocol == 'iso' and self.currentaddress == addr and self.currentsubprotocol == ecu['protocol']:
             return
         if self.lf != 0:
@@ -1413,23 +1429,48 @@ class ELM:
         self.check_answer(self.cmd('at at 1'))
         self.check_answer(self.cmd('81'))
         self.check_adapter()
-
-    def checkPerformaceLevel(self, dataids):
+    
+    def checkModulePerformaceLevel(self, dataids):
         performanceLevels = [3, 2]
 
         for level in performanceLevels:
-            if len(dataids) >= level:
-                paramToSend = ''
-                frameLength = '{:02X}'.format(1 + level * 2)
-
-                for i in range(level):
-                    paramToSend += dataids.keys()[i]
-                cmd = frameLength + '22' + paramToSend + '1'
-
-                resp = self.send_raw(cmd)
-                if not '?' in resp and resp[2:4] != '7F':
-                    self.performanceModeLevel = level
-                    return
+            isLevelAccepted = self.checkPerformaceLevel(level, dataids)
+            if isLevelAccepted:
+                break
+        
+        # if self.performanceModeLevel == 3 and mod_globals.opt_obdlink:
+        #     for level in reversed(range(4,26)): #26 - 1 = 25  parameters per page
+        #         isLevelAccepted = self.checkPerformaceLevel(level, dataids)
+        #         if isLevelAccepted:
+        #             return
     
+    def checkPerformaceLevel(self, level, dataids):
+        if len(dataids) >= level:
+            paramToSend = ''
+
+            if level <= 3: # 3 dataids max can be send in single frame
+                frameLength = '{:02X}'.format(1 + level * 2)
+                for lvl in range(level):
+                    paramToSend += dataids.keys()[lvl]
+                cmd = frameLength + '22' + paramToSend + '1'
+                resp = self.send_raw(cmd)
+                for s in resp.split('\n'):
+                    if s.strip().startswith('037F'):
+                        return False
+            else:
+                self.send_raw ("0322" + dataids.keys()[0] + "1")
+                for lvl in range(level):
+                    resp = self.request("22" + dataids.keys()[lvl])
+                    if any(s in resp for s in ['?', 'NR']):
+                        continue
+                    paramToSend += dataids.keys()[lvl]
+                cmd = '22' + paramToSend
+                resp = self.send_cmd(cmd)
+            if any(s in resp for s in ['?', 'NR']):
+                return False
+
+        self.performanceModeLevel = level  
+        return True
+
     def reset_elm(self):
         self.cmd('at z')

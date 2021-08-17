@@ -136,6 +136,7 @@ class MyLabelGreen(ButtonBehavior, Label):
         self.bind(size=self.on_size)
         self.bind(text=self.on_text_changed)
         self.clicked = False
+        self.param_name = kwargs["param_name"]
 
     def on_size(self, widget, size):
         fs = mod_globals.fontSize
@@ -145,16 +146,12 @@ class MyLabelGreen(ButtonBehavior, Label):
             self.height = fs * fmn
         elif self.size_hint_x is None and self.size_hint_y is not None:
             self.width = self.texture_size[0]
-        # for dr in favouriteScreen.datarefs:
-        #     if dr.name == self.text.split(' ')[0]:
-        #         self.toAdd()
-        #         self.clicked = 1
-        #         break
-        #     else:
-        self.canvas.before.clear()
-        with self.canvas.before:
-            Color(0, 0, 1, 0.25)
-            Rectangle(pos=self.pos, size=self.size)
+        self.toNormal()
+        for dr in favouriteScreen.datarefs:
+            if dr.name == self.param_name:
+                self.toAdd()
+                self.clicked = True
+                break
 
     def on_text_changed(self, widget, text):
         self.on_size(self, self.size)
@@ -227,14 +224,14 @@ class showDatarefGui(App):
         self.running = True
         # self.ecu.elm.send_cmd(self.ecu.ecudata['startDiagReq'])
 
-    def make_box_params(self, str1, val):
+    def make_box_params(self, parameter_name, val):
         fs = mod_globals.fontSize
         glay = BoxLayout(orientation='horizontal', size_hint=(1, None), height=fs * 2.0)
-        label1 = MyLabelGreen(text=self.paramsLabels[str1], halign='left', valign='top', size_hint=(self.blue_part_size, None), font_size=fs, on_press= lambda *args: self.ecu.addElem(self.paramsLabels[str1].split(' ')[0]))
+        label1 = MyLabelGreen(text=self.paramsLabels[parameter_name], halign='left', valign='top', size_hint=(self.blue_part_size, None), font_size=fs, on_press= lambda *args: self.ecu.addElem(self.paramsLabels[parameter_name].split(' ')[0]), param_name=parameter_name)
         label2 = MyLabelBlue(text=val, halign='right', valign='top', size_hint=(1 - self.blue_part_size, 1), font_size=fs)
         glay.add_widget(label1)
         glay.add_widget(label2)
-        self.labels[str1] = label2
+        self.labels[parameter_name] = label2
         return glay
 
     def finish(self, instance):
@@ -461,8 +458,9 @@ class ECU():
             self.elm.init_iso()
             self.elm.set_iso_addr(self.ecudata['dst'], self.ecudata)
         self.elm.start_session(self.ecudata['startDiagReq'])
-        if self.ecudata['pin'].lower()=='can' and self.DataIds and mod_globals.opt_perform:
-            self.elm.checkPerformaceLevel(self.DataIds)
+        if self.ecudata['pin'].lower()=='can' and self.DataIds and mod_globals.opt_csv:
+            mod_globals.opt_perform = True
+            self.elm.checkModulePerformaceLevel(self.DataIds)
         
         print 'Done'
         ecudump = {}
