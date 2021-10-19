@@ -344,7 +344,6 @@ def main():
     kivyScreenConfig()
     settings.save()
     print 'Opening ELM'
-    elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
     try:
         elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
     except:
