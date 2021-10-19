@@ -315,6 +315,7 @@ def get_devices():
         if deviceName:
             deviceAddress = device.getAddress()
             devs[deviceName] = deviceAddress
+    
     return devs
 
 

@@ -179,7 +179,6 @@ class screenConfig(App):
                 mod_globals.opt_dev_address = address
             btn = Button(text=name + '>' + address, size_hint_y=None, height=fs * 2)
             btn.bind(on_release=lambda btn: self.bt_dropdown.select(btn.text))
-            # btn.bind(on_press=lambda btn: self.setBluetoothDeviceAddress(address))
             self.bt_dropdown.add_widget(btn)
 
         self.mainbutton = Button(text='Select', size_hint=(1, None), height=fs * 2)
@@ -194,9 +193,6 @@ class screenConfig(App):
         setattr(self.langbutton, 'text', buttonText)
         setattr(self.langbutton, 'background_normal', '')
         setattr(self.langbutton, 'background_color', (0.345,0.345,0.345,1))
-    
-    # def setBluetoothDeviceAddress(self, address):
-    #     mod_globals.opt_dev_address = address
 
     def make_language_entry(self):
         fs = mod_globals.fontSize
@@ -349,26 +345,26 @@ def main():
     settings.save()
     print 'Opening ELM'
     elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
-    # try:
-    #     elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
-    # except:
-    #     labelText = '''
-    #         Could not connect to the ELM.
+    try:
+        elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
+    except:
+        labelText = '''
+            Could not connect to the ELM.
 
-    #         Possible causes:
-    #         - Bluetooth is not enabled
-    #         - other applications are connected to your ELM e.g Torque
-    #         - other device is using this ELM
-    #         - ELM got unpaired
-    #         - ELM is read under new name or it changed its name
+            Possible causes:
+            - Bluetooth is not enabled
+            - other applications are connected to your ELM e.g Torque
+            - other device is using this ELM
+            - ELM got unpaired
+            - ELM is read under new name or it changed its name
 
-    #         Check your ELM connection and try again.
-    #     '''
-    #     lbltxt = Label(text=labelText, font_size=mod_globals.fontSize)
-    #     popup_load = Popup(title='ELM connection error', content=lbltxt, size=(800, 800), auto_dismiss=True, on_dismiss=exit)
-    #     popup_load.open()
-    #     base.runTouchApp()
-    #     exit(2)
+            Check your ELM connection and try again.
+        '''
+        lbltxt = Label(text=labelText, font_size=mod_globals.fontSize)
+        popup_load = Popup(title='ELM connection error', content=lbltxt, size=(800, 800), auto_dismiss=True, on_dismiss=exit)
+        popup_load.open()
+        base.runTouchApp()
+        exit(2)
     if mod_globals.opt_speed < mod_globals.opt_rate and not mod_globals.opt_demo:
         elm.port.soft_boudrate(mod_globals.opt_rate)
     print 'Loading ECUs list'
