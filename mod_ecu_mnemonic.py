@@ -30,6 +30,11 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
         if len(se[sid].params) > 1:
             if se[sid].params[1]['type'] == 'Snapshot':
                 snapshotService = se[sid]
+        elif se[sid].startReq.startswith("1904"):
+            snapshotService = se[sid]
+    
+    if not snapshotService:
+        return "00"
     
     resp = executeService( snapshotService, elm, [], "", True )
     if ((mod_globals.opt_demo and not resp) or not resp.startswith(snapshotService.simpleRsp) or len(resp)/2 == 6):
