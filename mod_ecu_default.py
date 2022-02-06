@@ -146,7 +146,7 @@ def get_default_std_b(df, mn, se, elm, calc, getDTCmnemo):
         #     DTCs = DTCs[12:]
         #     continue
         infoPeriod = df[dtc].interpInfoPeri
-        if len(infoPeriod.strip()) == 0:
+        if len(infoPeriod.strip()) != 0:
             infoPeriod = infoPeriod.replace('&amp;', '&')
             for m in sorted(df[dtc].mnemolistIP, key=len, reverse=True):
                 hex_val = get_mnemonicDTC(mn[m], '59 02 FF ' + DTCs)

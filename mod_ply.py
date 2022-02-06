@@ -65,6 +65,12 @@ class Calc(Parser):
 
     t_HEX.func_doc = '0x[a-fA-F0-9][a-fA-F0-9]*'
 
+    def t_HEXSTR(self, t):
+        t.value = t.value
+        return t
+
+    t_HEXSTR.func_doc = '[a-fA-F0-9]*[a-fA-F][a-fA-F0-9]*'
+
     def t_NAME(self, t):
         return t
 
@@ -75,12 +81,6 @@ class Calc(Parser):
         return t
 
     t_FLOAT.func_doc = '((\\d*\\.\\d+)(E[\\+-]?\\d+)?|([1-9]\\d*E[\\+-]?\\d+))'
-
-    def t_HEXSTR(self, t):
-        t.value = t.value
-        return t
-
-    t_HEXSTR.func_doc = '[a-fA-F0-9]*[a-fA-F][a-fA-F0-9]*'
 
     def t_NUMBER(self, t):
         t.value = int(t.value)
